@@ -80,7 +80,16 @@ async function deleteTimesheetEntry(id) {
   return rowCount > 0;
 }
 
-module.exports = { 
-  saveItem, getItems, getItemById, deleteItem,
+async function getRecentItems(limit = 20) {
+  const { rows } = await pool.query(
+    `SELECT id, type, title, summary, tags, priority, created_at
+     FROM items ORDER BY created_at DESC LIMIT $1`,
+    [limit]
+  );
+  return rows;
+}
+
+module.exports = {
+  saveItem, getItems, getItemById, deleteItem, getRecentItems,
   saveTimesheetEntry, getTimesheetEntries, deleteTimesheetEntry
 };

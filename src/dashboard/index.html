@@ -34,6 +34,7 @@
       <nav class="main-nav">
         <button class="nav-btn active" id="nav-notes">Bot Notes</button>
         <button class="nav-btn" id="nav-timesheet">Timesheet</button>
+        <button class="nav-btn" id="nav-assistant">🤖 Assistant</button>
       </nav>
 
       <div class="header-right">
@@ -187,6 +188,55 @@
         </div>
       </section>
 
+    </main>
+  </div>
+
+  <!-- ============================================== -->
+  <!-- ── ASSISTANT VIEW ── -->
+  <!-- ============================================== -->
+  <div id="view-assistant" style="display: none;">
+    <main class="main assistant-main">
+      <div class="chat-container card">
+
+        <!-- Message history -->
+        <div class="chat-messages" id="chat-messages">
+          <div class="chat-welcome">
+            <span class="chat-welcome-icon">🤖</span>
+            <p>Hi Hernani! I'm your personal assistant.<br>Ask me anything, share ideas, or upload a file.</p>
+          </div>
+        </div>
+
+        <!-- Save notification banner -->
+        <div class="chat-saved-banner" id="chat-saved-banner" style="display:none;">
+          <span id="chat-saved-text"></span>
+        </div>
+
+        <!-- Input area -->
+        <div class="chat-input-area">
+
+          <!-- Staged file strip -->
+          <div class="chat-file-strip" id="chat-file-strip" style="display:none;">
+            <span class="chat-file-icon">📎</span>
+            <span class="chat-file-name" id="chat-file-name"></span>
+            <button class="chat-file-remove" id="chat-file-remove" title="Remove file">✕</button>
+          </div>
+
+          <div class="chat-input-row">
+            <label class="chat-attach-btn" for="chat-file-input" title="Attach file (txt, md, csv, js, json, py, pdf)">
+              📎
+              <input type="file" id="chat-file-input"
+                     accept=".txt,.md,.csv,.js,.ts,.json,.py,.pdf"
+                     style="display:none;" />
+            </label>
+
+            <textarea id="chat-textarea" class="chat-textarea" rows="1"
+                      placeholder="Message your assistant… (Enter to send, Shift+Enter for new line)"></textarea>
+
+            <button class="chat-send-btn" id="chat-send-btn">Send</button>
+          </div>
+        </div>
+
+      </div>
     </main>
   </div>
 

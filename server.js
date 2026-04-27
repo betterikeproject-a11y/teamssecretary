@@ -11,6 +11,7 @@ const path    = require('path');
 const { initDb }    = require('./src/db/client');
 const botRoute      = require('./src/routes/bot');
 const apiRoute      = require('./src/routes/api');
+const chatRoute     = require('./src/routes/chat');
 
 const app  = express();
 const PORT = process.env.PORT || 3000;
@@ -28,6 +29,9 @@ app.use('/api/messages', botRoute);
 
 // REST API for the dashboard
 app.use('/api', apiRoute);
+
+// Assistant chat API
+app.use('/api/chat', chatRoute);
 
 // Catch-all → serve dashboard index for any non-API route
 app.get('*', (_req, res) => {

@@ -92,6 +92,16 @@ function bindEvents() {
 
   // Timesheet
   tsForm.addEventListener('submit', handleTimesheetSubmit);
+
+  // Assistant
+  document.getElementById('nav-assistant').addEventListener('click', () => switchTab('assistant'));
+  document.getElementById('chat-send-btn').addEventListener('click', handleChatSend);
+  document.getElementById('chat-file-input').addEventListener('change', handleFileStage);
+  document.getElementById('chat-file-remove').addEventListener('click', clearStagedFile);
+  document.getElementById('chat-textarea').addEventListener('keydown', e => {
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleChatSend(); }
+  });
+  document.getElementById('chat-textarea').addEventListener('input', autoResizeChatTextarea);
 }
 
 // ── Auth ──────────────────────────────────────────────────────
@@ -137,17 +147,16 @@ function handleLogout() {
 
 // ── Navigation ────────────────────────────────────────────────
 function switchTab(tab) {
-  if (tab === 'notes') {
-    navNotes.classList.add('active');
-    navTimesheet.classList.remove('active');
-    viewNotes.style.display = 'block';
-    viewTimesheet.style.display = 'none';
-  } else {
-    navTimesheet.classList.add('active');
-    navNotes.classList.remove('active');
-    viewTimesheet.style.display = 'block';
-    viewNotes.style.display = 'none';
-  }
+  const navAssistant  = document.getElementById('nav-assistant');
+  const viewAssistant = document.getElementById('view-assistant');
+
+  navNotes.classList.toggle('active',     tab === 'notes');
+  navTimesheet.classList.toggle('active', tab === 'timesheet');
+  navAssistant.classList.toggle('active', tab === 'assistant');
+
+  viewNotes.style.display     = tab === 'notes'     ? 'block' : 'none';
+  viewTimesheet.style.display = tab === 'timesheet' ? 'block' : 'none';
+  viewAssistant.style.display = tab === 'assistant' ? 'block' : 'none';
 }
 
 // ── Bot Notes ─────────────────────────────────────────────────
@@ -565,4 +574,139 @@ function showError(msg) {
   loading.style.display = 'none';
   empty.innerHTML = `<p>⚠️ ${msg}</p>`;
   empty.style.display = 'block';
+}
+
+// ── Assistant Chat ─────────────────────────────────────────────
+
+let conversationHistory = [];
+let stagedFile          = null;
+let chatIsLoading       = false;
+let typingCounter       = 0;
+
+function handleFileStage(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  stagedFile = { file, name: file.name };
+  document.getElementById('chat-file-name').textContent = file.name;
+  document.getElementById('chat-file-strip').style.display = 'flex';
+  e.target.value = ''; // allow re-selecting the same file
+}
+
+function clearStagedFile() {
+  stagedFile = null;
+  document.getElementById('chat-file-strip').style.display = 'none';
+  document.getElementById('chat-file-name').textContent = '';
+}
+
+async function handleChatSend() {
+  if (chatIsLoading) return;
+  const textarea = document.getElementById('chat-textarea');
+  const message  = textarea.value.trim();
+  if (!message && !stagedFile) return;
+
+  chatIsLoading = true;
+  document.getElementById('chat-send-btn').disabled = true;
+
+  const displayText = stagedFile
+    ? (message ? `${message}  📎 ${stagedFile.name}` : `📎 ${stagedFile.name}`)
+    : message;
+  appendChatBubble('user', displayText);
+
+  textarea.value = '';
+  autoResizeChatTextarea();
+
+  const typingId   = appendTypingIndicator();
+  const fileToSend = stagedFile ? stagedFile.file : null;
+  clearStagedFile();
+
+  try {
+    const data = fileToSend
+      ? await sendChatWithFile(message, fileToSend)
+      : await sendChatMessage(message);
+
+    removeTypingIndicator(typingId);
+    appendChatBubble('assistant', data.reply);
+
+    // Keep history capped at 30 entries (15 turns) to avoid huge payloads
+    conversationHistory.push({ role: 'user',      content: message || `[file: ${data.fileName || ''}]` });
+    conversationHistory.push({ role: 'assistant', content: data.reply });
+    if (conversationHistory.length > 30) conversationHistory = conversationHistory.slice(-30);
+
+    if (data.savedItem) {
+      showChatSavedBanner(data.savedItem);
+      loadData(); // refresh Bot Notes tab in background
+    }
+  } catch (err) {
+    removeTypingIndicator(typingId);
+    appendChatBubble('assistant', 'Sorry, something went wrong. Please try again.', true);
+    console.error('Chat error:', err);
+  } finally {
+    chatIsLoading = false;
+    document.getElementById('chat-send-btn').disabled = false;
+    textarea.focus();
+  }
+}
+
+async function sendChatMessage(message) {
+  const res = await apiFetch(`${API_BASE}/chat`, {
+    method:  'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body:    JSON.stringify({ message, conversationHistory }),
+  });
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  return res.json();
+}
+
+async function sendChatWithFile(message, file) {
+  const formData = new FormData();
+  formData.append('file', file);
+  if (message) formData.append('message', message);
+  formData.append('conversationHistory', JSON.stringify(conversationHistory));
+  // Do NOT set Content-Type — browser sets it with the multipart boundary
+  const res = await apiFetch(`${API_BASE}/chat/upload`, { method: 'POST', body: formData });
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  return res.json();
+}
+
+function appendChatBubble(role, text, isError = false) {
+  const messages = document.getElementById('chat-messages');
+  const div = document.createElement('div');
+  div.className = `chat-bubble chat-bubble-${role}${isError ? ' chat-bubble-error' : ''}`;
+  // Render **bold** and line breaks; escape everything else
+  div.innerHTML = escapeHtml(text)
+    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\n/g, '<br>');
+  messages.appendChild(div);
+  messages.scrollTop = messages.scrollHeight;
+  return div;
+}
+
+function appendTypingIndicator() {
+  const id = `typing-${++typingCounter}`;
+  const messages = document.getElementById('chat-messages');
+  const div = document.createElement('div');
+  div.id = id;
+  div.className = 'chat-bubble chat-bubble-assistant chat-typing';
+  div.innerHTML = '<span></span><span></span><span></span>';
+  messages.appendChild(div);
+  messages.scrollTop = messages.scrollHeight;
+  return id;
+}
+
+function removeTypingIndicator(id) {
+  document.getElementById(id)?.remove();
+}
+
+function showChatSavedBanner(savedItem) {
+  const banner = document.getElementById('chat-saved-banner');
+  document.getElementById('chat-saved-text').textContent =
+    `✅ Saved ${savedItem.type}: "${savedItem.title}"`;
+  banner.style.display = 'flex';
+  setTimeout(() => { banner.style.display = 'none'; }, 4000);
+}
+
+function autoResizeChatTextarea() {
+  const ta = document.getElementById('chat-textarea');
+  ta.style.height = 'auto';
+  ta.style.height = Math.min(ta.scrollHeight, 200) + 'px';
 }
