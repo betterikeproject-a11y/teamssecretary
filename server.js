@@ -39,7 +39,7 @@ app.get('*', (_req, res) => {
   try {
     await initDb();
     console.log('✅ Database initialised');
-    app.listen(PORT, () => console.log(`🚀 TeamsSecretary running on port ${PORT}`));
+    app.listen(PORT, () => console.log(`🤖 Hernani Automation Assistant running on port ${PORT}`));
   } catch (err) {
     console.error('❌ Failed to start server:', err);
     process.exit(1);

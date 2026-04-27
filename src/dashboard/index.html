@@ -3,18 +3,52 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>TeamsSecretary Dashboard</title>
+  <title>Hernani Automation Assistant</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🤖</text></svg>" />
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
+
+  <!-- ── Login Overlay ── -->
+  <div id="login-overlay" class="modal-overlay login-overlay">
+    <div class="login-modal">
+      <h2>Welcome</h2>
+      <p>Please enter your email to continue.</p>
+      <form id="login-form">
+        <input type="email" id="login-email" placeholder="your@email.com" required />
+        <button type="submit" class="btn-primary">Login</button>
+      </form>
+      <p id="login-error" class="error-msg" style="display:none">Unauthorized email.</p>
+    </div>
+  </div>
 
   <!-- ── Header ── -->
   <header class="header">
     <div class="header-inner">
       <div class="logo">
-        <span class="logo-icon">🗂️</span>
-        <span class="logo-text">TeamsSecretary</span>
+        <span class="logo-icon">🤖</span>
+        <span class="logo-text">Hernani Automation Assistant</span>
       </div>
+      
+      <!-- Main Navigation -->
+      <nav class="main-nav">
+        <button class="nav-btn active" id="nav-notes">Bot Notes</button>
+        <button class="nav-btn" id="nav-timesheet">Timesheet</button>
+      </nav>
+
+      <div class="header-right">
+        <span class="user-email" id="user-email-display"></span>
+        <button class="btn-secondary" id="btn-logout" style="display:none; margin-left: 10px;">Logout</button>
+        <button class="btn-refresh" id="btn-refresh" title="Refresh">↻ Refresh</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ============================================== -->
+  <!-- ── BOT NOTES VIEW ── -->
+  <!-- ============================================== -->
+  <div id="view-notes">
+    <div class="header-stats-container">
       <div class="header-stats" id="stats-bar">
         <span class="stat" id="stat-total">— items</span>
         <span class="stat meeting">📋 <span id="stat-meeting">0</span> meetings</span>
@@ -22,27 +56,139 @@
         <span class="stat note">📝 <span id="stat-note">0</span> notes</span>
         <span class="stat idea">💡 <span id="stat-idea">0</span> ideas</span>
       </div>
-      <button class="btn-refresh" id="btn-refresh" title="Refresh">↻ Refresh</button>
     </div>
-  </header>
 
-  <!-- ── Filter bar ── -->
-  <div class="filter-bar">
-    <button class="filter-btn active" data-type="all">All</button>
-    <button class="filter-btn" data-type="meeting">📋 Meetings</button>
-    <button class="filter-btn" data-type="task">✅ Tasks</button>
-    <button class="filter-btn" data-type="note">📝 Notes</button>
-    <button class="filter-btn" data-type="idea">💡 Ideas</button>
+    <!-- Filter bar -->
+    <div class="filter-bar">
+      <button class="filter-btn active" data-type="all">All</button>
+      <button class="filter-btn" data-type="meeting">📋 Meetings</button>
+      <button class="filter-btn" data-type="task">✅ Tasks</button>
+      <button class="filter-btn" data-type="note">📝 Notes</button>
+      <button class="filter-btn" data-type="idea">💡 Ideas</button>
+    </div>
+
+    <!-- Main content -->
+    <main class="main">
+      <div id="loading" class="loading-state">Loading…</div>
+      <div id="empty" class="empty-state" style="display:none">
+        <p>No items yet.<br>Send a message to your Teams bot to get started.</p>
+      </div>
+      <div id="items-grid" class="items-grid"></div>
+    </main>
   </div>
 
-  <!-- ── Main content ── -->
-  <main class="main">
-    <div id="loading" class="loading-state">Loading…</div>
-    <div id="empty"   class="empty-state" style="display:none">
-      <p>No items yet.<br>Send a message to your Teams bot to get started.</p>
-    </div>
-    <div id="items-grid" class="items-grid"></div>
-  </main>
+  <!-- ============================================== -->
+  <!-- ── TIMESHEET VIEW ── -->
+  <!-- ============================================== -->
+  <div id="view-timesheet" style="display: none;">
+    <main class="main timesheet-main">
+      
+      <!-- Timesheet Form -->
+      <section class="timesheet-form-section card">
+        <h2>Add Timesheet Entry</h2>
+        <form id="timesheet-form" class="timesheet-form">
+          <div class="form-row">
+            <div class="form-group">
+              <label for="ts-date">Date</label>
+              <input type="date" id="ts-date" required />
+            </div>
+            <div class="form-group">
+              <label for="ts-schedule">Schedule</label>
+              <input type="text" id="ts-schedule" placeholder="e.g. Schedule 1" required />
+            </div>
+            <div class="form-group">
+              <label for="ts-billable">Billable To</label>
+              <select id="ts-billable" required>
+                <option value="">Select...</option>
+                <option value="MEW - Admin/Non Billable">MEW - Admin/Non Billable</option>
+                <option value="Client Project A">Client Project A</option>
+                <option value="Client Project B">Client Project B</option>
+              </select>
+            </div>
+          </div>
+          
+          <div class="form-row">
+            <div class="form-group flex-2">
+              <label for="ts-project">Project / Task</label>
+              <input type="text" id="ts-project" placeholder="What task did you work on?" required />
+            </div>
+            <div class="form-group">
+              <label for="ts-timein">Time In</label>
+              <input type="time" id="ts-timein" required />
+            </div>
+            <div class="form-group">
+              <label for="ts-timeout">Time Out</label>
+              <input type="time" id="ts-timeout" required />
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group flex-2">
+              <label for="ts-notes">Notes (Optional)</label>
+              <input type="text" id="ts-notes" placeholder="Additional details..." />
+            </div>
+            <div class="form-group form-actions">
+              <button type="submit" class="btn-primary">Add Entry</button>
+            </div>
+          </div>
+        </form>
+      </section>
+
+      <!-- Month Filter Bar -->
+      <div class="ts-filter-bar" id="ts-filter-bar"></div>
+
+      <!-- Period Summary Card -->
+      <section class="ts-summary-card card" id="ts-summary-card" style="display:none;">
+        <div class="ts-summary-stat">
+          <span class="ts-summary-label">Total Hours</span>
+          <span class="ts-summary-value" id="ts-total-hours">—</span>
+        </div>
+        <div class="ts-summary-divider"></div>
+        <div class="ts-summary-stat">
+          <span class="ts-summary-label">Regular Hours</span>
+          <span class="ts-summary-value ts-value-regular" id="ts-regular-hours">—</span>
+        </div>
+        <div class="ts-summary-divider"></div>
+        <div class="ts-summary-stat">
+          <span class="ts-summary-label">Extra Hours</span>
+          <span class="ts-summary-value ts-value-extra" id="ts-extra-hours">—</span>
+        </div>
+      </section>
+
+      <!-- Timesheet List -->
+      <section class="timesheet-list-section card">
+        <div class="ts-list-header">
+          <h2 id="ts-list-heading">All Entries</h2>
+          <span class="ts-list-subtitle" id="ts-list-subtitle"></span>
+        </div>
+        <div class="table-responsive">
+          <table class="timesheet-table">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Wk</th>
+                <th>Schedule</th>
+                <th>Billable To</th>
+                <th>Project/Task</th>
+                <th>Time In</th>
+                <th>Time Out</th>
+                <th>Total</th>
+                <th>Notes</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="timesheet-tbody">
+              <!-- JS will populate rows here -->
+            </tbody>
+          </table>
+        </div>
+        <div id="ts-empty" class="empty-state" style="display:none">
+          <p>No timesheet entries found.</p>
+        </div>
+      </section>
+
+    </main>
+  </div>
 
   <!-- ── Item detail modal ── -->
   <div id="modal-overlay" class="modal-overlay" style="display:none">

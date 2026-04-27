@@ -1,5 +1,5 @@
 /* ============================================================
-   TeamsSecretary Dashboard — styles.css
+   Hernani Automation Assistant — styles.css
    ============================================================ */
 
 :root {
@@ -66,12 +66,19 @@ body {
   font-size: 1.1rem;
 }
 .logo-icon { font-size: 1.4rem; }
+.header-stats-container {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+}
 .header-stats {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 10px 24px;
   display: flex;
-  gap: 16px;
-  margin-left: auto;
+  gap: 20px;
   font-size: .85rem;
   color: var(--muted);
+  flex-wrap: wrap;
 }
 .stat { white-space: nowrap; }
 
@@ -175,6 +182,7 @@ body {
   line-height: 1.5;
   display: -webkit-box;
   -webkit-line-clamp: 3;
+  line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
@@ -280,3 +288,169 @@ body {
   .header-stats { display: none; }
   .items-grid { grid-template-columns: 1fr; }
 }
+
+/* ============================================================
+   Timesheet & Auth Additions
+   ============================================================ */
+
+/* ── Login Overlay ── */
+.login-overlay {
+  z-index: 1000;
+  backdrop-filter: blur(4px);
+}
+.login-modal {
+  background: var(--surface);
+  border-radius: var(--radius);
+  padding: 32px;
+  width: 100%;
+  max-width: 400px;
+  box-shadow: var(--shadow-h);
+  text-align: center;
+}
+.login-modal h2 { margin-bottom: 8px; }
+.login-modal p { color: var(--muted); margin-bottom: 24px; font-size: 0.9rem; }
+.login-modal input { width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 6px; margin-bottom: 16px; font-size: 1rem; }
+.error-msg { color: #dc2626 !important; margin-top: 12px; font-weight: 600; }
+
+/* ── Main Nav ── */
+.main-nav {
+  display: flex;
+  gap: 8px;
+  margin-left: 24px;
+}
+.nav-btn {
+  background: transparent;
+  border: none;
+  color: var(--muted);
+  font-weight: 600;
+  font-size: 0.95rem;
+  padding: 8px 12px;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: color 0.15s, border-color 0.15s;
+}
+.nav-btn:hover { color: var(--accent); }
+.nav-btn.active {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+
+.header-right {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.user-email { font-size: 0.85rem; color: var(--muted); }
+
+/* ── Buttons ── */
+.btn-primary {
+  background: var(--accent); color: white; border: none; padding: 10px 20px;
+  border-radius: 6px; font-weight: 600; cursor: pointer; width: 100%; transition: background 0.15s;
+}
+.btn-primary:hover { background: var(--accent-h); }
+.btn-secondary {
+  background: var(--surface); color: var(--text); border: 1px solid var(--border);
+  padding: 6px 12px; border-radius: 6px; font-weight: 600; font-size: 0.8rem; cursor: pointer;
+}
+.btn-secondary:hover { background: var(--bg); }
+
+/* ── Timesheet View ── */
+.timesheet-main { max-width: 1200px; }
+.timesheet-form-section { margin-bottom: 24px; }
+.timesheet-form-section h2 { margin-bottom: 16px; font-size: 1.1rem; }
+
+/* ── Timesheet Month Filter ── */
+.ts-filter-bar {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+
+/* ── Period Summary Card ── */
+.ts-summary-card {
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  padding: 20px 32px;
+  margin-bottom: 16px;
+  cursor: default;
+  gap: 0;
+}
+.ts-summary-card:hover { transform: none; box-shadow: var(--shadow); }
+.ts-summary-stat {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 0 24px;
+}
+.ts-summary-divider {
+  width: 1px;
+  height: 52px;
+  background: var(--border);
+  flex-shrink: 0;
+}
+.ts-summary-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.ts-summary-value {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--text);
+  line-height: 1;
+}
+.ts-value-regular { color: var(--accent); }
+.ts-value-extra   { color: #f59e0b; }
+
+@media (max-width: 640px) {
+  .ts-summary-card { flex-direction: column; gap: 16px; }
+  .ts-summary-divider { width: 100%; height: 1px; }
+}
+
+/* ── Timesheet List Header ── */
+.ts-list-header {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.ts-list-header h2 { font-size: 1.1rem; margin-bottom: 0; }
+.ts-list-subtitle {
+  font-size: 0.8rem;
+  color: var(--muted);
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.timesheet-form { display: flex; flex-direction: column; gap: 16px; }
+.form-row { display: flex; gap: 16px; flex-wrap: wrap; }
+.form-group { flex: 1; min-width: 200px; display: flex; flex-direction: column; gap: 6px; }
+.form-group.flex-2 { flex: 2; min-width: 300px; }
+.form-group label { font-size: 0.85rem; font-weight: 600; color: var(--text); }
+.form-group input, .form-group select {
+  padding: 10px; border: 1px solid var(--border); border-radius: 6px;
+  font-size: 0.95rem; font-family: inherit; background: var(--surface);
+}
+.form-group input:focus, .form-group select:focus {
+  outline: none; border-color: var(--accent);
+}
+.form-actions { justify-content: flex-end; }
+
+/* ── Timesheet Table ── */
+.table-responsive { overflow-x: auto; }
+.timesheet-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+.timesheet-table th, .timesheet-table td {
+  padding: 12px; text-align: left; border-bottom: 1px solid var(--border);
+}
+.timesheet-table th { background: var(--bg); font-weight: 600; color: var(--muted); white-space: nowrap; }
+.timesheet-table tbody tr:hover { background: #f8fafc; }
+.timesheet-table td.actions { white-space: nowrap; }
+.btn-delete { background: none; border: none; color: #ef4444; cursor: pointer; font-weight: 600; }
+.btn-delete:hover { text-decoration: underline; }

@@ -1,5 +1,5 @@
 {
-  "name": "teamssecretary",
+  "name": "hernani-automation-assistant",
   "version": "1.0.0",
   "description": "Microsoft Teams personal assistant bot powered by Claude AI",
   "main": "server.js",

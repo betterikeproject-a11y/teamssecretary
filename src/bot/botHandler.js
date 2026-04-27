@@ -43,7 +43,7 @@ function detectInputType(text) {
   return 'note'; // default fallback
 }
 
-class TeamsSecretaryBot extends ActivityHandler {
+class HernaniAutomationBot extends ActivityHandler {
   constructor() {
     super();
 
@@ -93,7 +93,7 @@ class TeamsSecretaryBot extends ActivityHandler {
       for (const member of context.activity.membersAdded) {
         if (member.id !== context.activity.recipient.id) {
           await context.sendActivity(MessageFactory.text(
-            '👋 Hi! I\'m **TeamsSecretary**.\n\n' +
+            '👋 Hi! I\'m **Hernani Automation Assistant**.\n\n' +
             'Send me:\n' +
             '• A **meeting transcript** → I\'ll summarise decisions & action items\n' +
             '• A **task** (e.g. "Task: review report by Friday") → I\'ll capture it with priority & due date\n' +
@@ -137,4 +137,4 @@ function buildReply(type, result) {
   return reply;
 }
 
-module.exports = { TeamsSecretaryBot };
+module.exports = { HernaniAutomationBot };

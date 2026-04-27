@@ -58,4 +58,29 @@ async function deleteItem(id) {
   return rowCount > 0;
 }
 
-module.exports = { saveItem, getItems, getItemById, deleteItem };
+// --- Timesheet Queries ---
+
+async function saveTimesheetEntry({ date, week_number, schedule, billable_to, project_task, time_in, time_out, notes }) {
+  const { rows } = await pool.query(
+    `INSERT INTO timesheet_entries (date, week_number, schedule, billable_to, project_task, time_in, time_out, notes)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+     RETURNING *`,
+    [date, week_number, schedule, billable_to, project_task, time_in, time_out, notes]
+  );
+  return rows[0];
+}
+
+async function getTimesheetEntries() {
+  const { rows } = await pool.query('SELECT * FROM timesheet_entries ORDER BY date DESC, time_in DESC');
+  return rows;
+}
+
+async function deleteTimesheetEntry(id) {
+  const { rowCount } = await pool.query('DELETE FROM timesheet_entries WHERE id = $1', [id]);
+  return rowCount > 0;
+}
+
+module.exports = { 
+  saveItem, getItems, getItemById, deleteItem,
+  saveTimesheetEntry, getTimesheetEntries, deleteTimesheetEntry
+};

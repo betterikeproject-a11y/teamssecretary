@@ -6,7 +6,7 @@
 
 const express = require('express');
 const { BotFrameworkAdapter } = require('botbuilder');
-const { TeamsSecretaryBot }   = require('../bot/botHandler');
+const { HernaniAutomationBot } = require('../bot/botHandler');
 
 const router = express.Router();
 
@@ -22,7 +22,7 @@ adapter.onTurnError = async (context, error) => {
   await context.sendActivity('❌ An unexpected error occurred. Please try again.');
 };
 
-const bot = new TeamsSecretaryBot();
+const bot = new HernaniAutomationBot();
 
 // Handle every incoming message from Teams
 router.post('/', (req, res) => {
